@@ -299,6 +299,7 @@ def construct_magnetic_field(
            f02 * B20dz / B0z + (2 * fxyz - f02) * B10dz2 / B0z2)
 #density balancing B
 #    import pdb; pdb.set_trace()
+    del rr, x, y, z
     rho_1 = S**2*G02/(mu0*g0) * (
             (0.5*f02 + 2*fxyz) * B10dz*B20dz + 0.5*f02 * B0z*B30dz
              - 2. * B0z3*B10dz
