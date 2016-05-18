@@ -7,7 +7,7 @@ Created on Tue Apr 16 11:36:52 2013
 
 import pysac.io as sacio
 
-infile = sacio.VACdata("/home/stuart/iceberg_data/VAC/data/3D_data/3D_tube_128_128_128.ini")
+infile = sacio.VACdata("/fastdata/sm1ajl/inidata/3D_tube_128_128_128.ini")
 print infile
 
 outfile = sacio.VACdata("testout.out",mode='w')
@@ -27,10 +27,10 @@ header = {
         'eqpar': [1.66666667, 0.0, 1.0, -274.0, 0.0, 0.0, 0.0]
         }
 outfile.header = header
-#outfile.x = x
-#outfile.w = w
-#outfile.write_step()
-#outfile.close()
+outfile.x = x
+outfile.w = w
+outfile.write_step()
+outfile.close()
 
 
 
