@@ -29,7 +29,7 @@ import os
 import numpy as np
 import pysac.mhs_atmosphere as atm
 import astropy.units as u
-from pysac.mhs_atmosphere.parameters.model_pars import paper2d as model_pars
+from pysac.mhs_atmosphere.parameters.model_pars import mfe_setup as model_pars
 #==============================================================================
 #check whether mpi is required and the number of procs = size
 #==============================================================================
@@ -40,9 +40,11 @@ try:
     rank = comm.Get_rank()
     size = comm.Get_size()
 
+    collective=True
     l_mpi = True
     l_mpi = l_mpi and (size != 1)
 except ImportError:
+    collective=False
     l_mpi = False
     rank = 0
     size = 1
@@ -58,7 +60,6 @@ scales, physical_constants = \
 
 #obtain code coordinates and model parameters in astropy units
 coords = atm.model_pars.get_coords(model_pars['Nxyz'], u.Quantity(model_pars['xyz']))
-
 #interpolate the hs 1D profiles from empirical data source[s]
 empirical_data = atm.hs_atmosphere.read_VAL3c_MTW(mu=physical_constants['mu'])
 
@@ -103,17 +104,21 @@ ax, ay, az = np.mgrid[coords['xmin']:coords['xmax']:1j*model_pars['Nxyz'][0],
                       coords['ymin']:coords['ymax']:1j*model_pars['Nxyz'][1],
                       coords['zmin']:coords['zmax']:1j*model_pars['Nxyz'][2]]
 
+axindex=np.arange(model_pars['Nxyz'][0])
 # split the grid between processes for mpi
 if l_mpi:
     x_chunks = np.array_split(ax, size, axis=0)
     y_chunks = np.array_split(ay, size, axis=0)
     z_chunks = np.array_split(az, size, axis=0)
+    i_chunks = np.array_split(axindex, size, axis=0)
 
     x = comm.scatter(x_chunks, root=0)
     y = comm.scatter(y_chunks, root=0)
     z = comm.scatter(z_chunks, root=0)
+    xindex=i_chunks[rank]
 else:
     x, y, z = ax, ay, az
+    xindex=axindex
 
 x = u.Quantity(x, unit=coords['xmin'].unit)
 y = u.Quantity(y, unit=coords['ymin'].unit)
@@ -195,6 +200,18 @@ if rank ==0:
 energy = atm.mhs_3D.get_internal_energy(pressure,
                                                   magp,
                                                   physical_constants)
+Rgas = u.Quantity(np.zeros(x.shape), unit=Rgas_z.unit)
+Rgas[:] = Rgas_z
+temperature = pressure/rho/Rgas
+if not option_pars['l_hdonly']:
+    inan = np.where(magp <=1e-7*pressure.min())
+    magpbeta = magp
+    magpbeta[inan] = 1e-7*pressure.min()  # low pressure floor to avoid NaN
+    pbeta  = pressure/magpbeta
+else:
+    pbeta  = magp+1.0    #dummy to avoid NaN
+alfven = np.sqrt(2.*magp/rho)
+cspeed = np.sqrt(physical_constants['gamma']*pressure/rho)
 #============================================================================
 # Save data for SAC and plotting
 #============================================================================
@@ -209,71 +226,67 @@ aux3D = datadir + model_pars['model'] + '_3Daux' + option_pars['suffix']
 aux1D = datadir + model_pars['model'] + '_1Daux' + option_pars['suffix']
 # save the variables for the initialisation of a SAC simulation
 atm.mhs_snapshot.save_SACvariables(
-              filename,
-              rho,
-              Bx,
-              By,
-              Bz,
-              energy,
-              option_pars,
-              physical_constants,
-              coords,
-              model_pars['Nxyz']
-             )
+          filename,
+          rho,
+          Bx,
+          By,
+          Bz,
+          energy,
+          option_pars,
+          physical_constants,
+          coords,
+          model_pars['Nxyz'],
+          xindex,
+          rank=rank,
+          collective=collective
+         )
 # save the balancing forces as the background source terms for SAC simulation
 atm.mhs_snapshot.save_SACsources(
-              sourcefile,
-              Fx,
-              Fy,
-              option_pars,
-              physical_constants,
-              coords,
-              model_pars['Nxyz']
-             )
+          sourcefile,
+          Fx,
+          Fy,
+          option_pars,
+          physical_constants,
+          coords,
+          model_pars['Nxyz'],
+          xindex,
+          rank=rank,
+          collective=collective
+         )
 # save auxilliary variable and 1D profiles for plotting and analysis
-Rgas = u.Quantity(np.zeros(x.shape), unit=Rgas_z.unit)
-Rgas[:] = Rgas_z
-temperature = pressure/rho/Rgas
-if not option_pars['l_hdonly']:
-    inan = np.where(magp <=1e-7*pressure.min())
-    magpbeta = magp
-    magpbeta[inan] = 1e-7*pressure.min()  # low pressure floor to avoid NaN
-    pbeta  = pressure/magpbeta
-else:
-    pbeta  = magp+1.0    #dummy to avoid NaN
-alfven = np.sqrt(2.*magp/rho)
-#if rank == 0:
-#    print'Alfven speed Z.min to Z.max =',\
-#    alfven[model_pars['Nxyz'][0]/2,model_pars['Nxyz'][1]/2, 0].decompose(),\
-#    alfven[model_pars['Nxyz'][0]/2,model_pars['Nxyz'][1]/2,-1].decompose()
-cspeed = np.sqrt(physical_constants['gamma']*pressure/rho)
 atm.mhs_snapshot.save_auxilliary3D(
-              aux3D,
-              pressure_m,
-              rho_m,
-              temperature,
-              pbeta,
-              alfven,
-              cspeed,
-              Btensx,
-              Btensy,
-              option_pars,
-              physical_constants,
-              coords,
-              model_pars['Nxyz']
-             )
-atm.mhs_snapshot.save_auxilliary1D(
-              aux1D,
-              pressure_Z,
-              rho_Z,
-              Rgas_Z,
-              option_pars,
-              physical_constants,
-              coords,
-              model_pars['Nxyz']
-             )
+          aux3D,
+          pressure_m,
+          rho_m,
+          temperature,
+          pbeta,
+          alfven,
+          cspeed,
+          Btensx,
+          Btensy,
+          option_pars,
+          physical_constants,
+          coords,
+          model_pars['Nxyz'],
+          xindex,
+          rank=rank,
+          collective=collective
+         )
+if rank==0:
+    atm.mhs_snapshot.save_auxilliary1D(
+          aux1D,
+          pressure_Z,
+          rho_Z,
+          Rgas_Z,
+          option_pars,
+          physical_constants,
+          coords,
+          model_pars['Nxyz'],
+          rank=rank,
+          collective=False
+         )
 if rho.min()<0 or pressure.min()<0:
-    print"FAIL: negative rho.min() {} and/or pressure.min() {}.".format(
-    rho.min(),pressure.min())
+    print"FAIL rank {}: negative rho.min() {} and/or pressure.min() {}.".format(
+                            rank,rho.min(),pressure.min())
 FWHM = 2*np.sqrt(np.log(2))*model_pars['radial_scale']
 print'FWHM(0) =',FWHM

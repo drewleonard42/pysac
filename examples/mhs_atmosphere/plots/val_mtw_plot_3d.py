@@ -86,4 +86,4 @@ nix = np.where(seeds.T[1] < - maxr * .99)
 if nix[0].size > 0:
     seeds.T[1][nix] = - maxr * .99
 atm.mhs_plot.make_3d_plot(ds, figname, fields=fkeys, figxy=figxy, view=view, 
-                 seeds=seeds)
+                 seeds=seeds, offscreen=False)

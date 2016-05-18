@@ -36,52 +36,58 @@ def set_options(model, l_mpi, l_gdf=True):
         'l_multi_twist': False,# multiple flux tubes as described in GFE (2014)
         'l_2D_loop':     False,# make a 2D loop with sinusoidal Bz(x,0,0)
         'l_mfe':         False,# model Viktor's model from MFE (2014)      
+        'l_sunspot':     False,# model sunspot (2016)      
         'l_atmos_val3c_mtw':False,# interpolate composite VAL3c+MTW atmosphere
         'suffix':        '.gdf'
     }
     #revise optional parameters depending on configuration required
     if model['model'] == 'hmi_model':
-        option_pars['l_hmi']             = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_hmi']             = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_atmos_val3c_mtw'] = True
+    if model['model'] == 'sunspot':
+        option_pars['l_single']          = True
+        option_pars['l_sunspot']         = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'mfe_setup':
-        option_pars['l_single']          = True 
-        option_pars['l_mfe']             = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_single']          = True
+        option_pars['l_mfe']             = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'spruit':    
-        option_pars['l_single']          = True 
-        option_pars['l_spruit']          = True 
+        option_pars['l_single']          = True
+        option_pars['l_spruit']          = True
     if model['model'] == 'paper1':
-        option_pars['l_ambB']            = True 
+        option_pars['l_ambB']            = True
         option_pars['l_B0_expz']         = True
         option_pars['l_single']          = True
         option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'paper2a':
-        option_pars['l_ambB']            = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_tube_pair']       = True 
+        option_pars['l_ambB']            = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_tube_pair']       = True
         option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'paper2b':
-        option_pars['l_ambB']            = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_multi_twist'    ] = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_ambB']            = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_multi_twist'    ] = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'paper2c':
-        option_pars['l_ambB']            = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_multi_netwk']     = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_ambB']            = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_multi_netwk']     = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'paper2d':
-        option_pars['l_ambB']            = True 
-        option_pars['l_B0_expz']         = True 
-        option_pars['l_multi_lanes'    ] = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_ambB']            = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_multi_lanes'    ] = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'hmi_model':
-        option_pars['l_B0_quadz']        = True 
-        option_pars['l_single']          = True 
-        option_pars['l_hmi']             = True 
-        option_pars['l_atmos_val3c_mtw'] = True 
+        option_pars['l_B0_quadz']        = True
+        option_pars['l_single']          = True
+        option_pars['l_hmi']             = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'loop_model':
         option_pars['l_B0_quadz']        = True 
         option_pars['l_single']          = True 

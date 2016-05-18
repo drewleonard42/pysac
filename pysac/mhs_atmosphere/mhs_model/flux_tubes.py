@@ -39,6 +39,9 @@ def get_flux_tubes(
             )
 
     # parameters for matching Mumford,Fedun,Erdelyi 2014
+    if option_pars['l_sunspot']:
+        Si = [[0.5]]*u.T # 128.5mT SI units
+    # parameters for matching Mumford,Fedun,Erdelyi 2014
     if option_pars['l_mfe']:
         Si = [[0.1436]]*u.T # 128.5mT SI units
     # parameters for matching Gent,Fedun,Mumford,Erdelyi 2014
@@ -160,7 +163,6 @@ def get_hmi_flux_tubes(
                                           "2014/07/05 23:59:55"),
                            vso.attrs.Instrument('HMI'),
                            vso.attrs.Physobs('LOS_magnetic_field'))
-    #print results.show()
 
     if l_newdata:
         if not os.path.exits(sunpydir):
@@ -310,7 +312,6 @@ def construct_magnetic_field(
     B2x = (Bx * dxBx + By * dyBx + Bz * dzBx)/mu0
     B2y = (Bx * dxBy + By * dyBy + Bz * dzBy)/mu0
 
-    warnings.warn("pbbal.max() = {}".format(pbbal.max().decompose()), Warning)
     return pbbal, rho_1, Bx, By, Bz, B2x, B2y
 
 #============================================================================
@@ -434,6 +435,5 @@ def construct_pairwise_field(x, y, z,
     B2y = (Bxi * dxjBy + Byi * dyjBy + Bzi * dzjBy
          + Bxj * dxiBy + Byj * dyiBy + Bzj * dziBy)/mu0
 
-    print"pbbal.max() = ",pbbal.max()
     return pbbal, rho_1, Fx, Fy, B2x, B2y
 

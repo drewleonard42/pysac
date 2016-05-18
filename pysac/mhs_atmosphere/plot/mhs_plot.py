@@ -415,12 +415,13 @@ def make_2d_plot(ds, var_field, figname, normal = ['y',64],
 ## Fieldline Generation
 ##============================================================================
 def make_3d_plot(ds, figname, 
-                 fields= ['thermal_pressure','plasma_beta',
+                 fields = ['thermal_pressure','plasma_beta',
                            'mag_field_x','mag_field_y','mag_field_z'], 
-                 figxy=[500,550],
-                 view=(-45., 90., 20., np.array([0,0,3.75])),
-                 seeds=np.array([[0,0,1]])
-                ):
+                 figxy = [500,550],
+                 view = (-45., 90., 20., np.array([0,0,3.75])),
+                 seeds = np.array([[0,0,1]]),
+                 offscreen = False
+            ):
     """Make a 3D rendition of the atmosphere including volume filling, iso
     surfaces and field lines. 
     ds: gdf data set
@@ -441,6 +442,9 @@ def make_3d_plot(ds, figname,
 #        vector_field = 'vorticity'
             
 #    mlab.options.offscreen = True
+    if offscreen:
+        #mlab.engine.current_scene.scene.off_screen_rendering = True
+        mlab.options.offscreen = True
     
     scene = mlab.figure(1, bgcolor=(1, 1, 1),
                     fgcolor=(0.5, 0.5, 0.5),size=figxy)

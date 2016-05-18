@@ -11,6 +11,20 @@ import yt
 
 import h5py
 from h5py import h5s, h5p, h5fd
+try:
+    from mpi4py import MPI
+
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
+    l_mpi = True
+    l_mpi = l_mpi and (size != 1)
+except ImportError:
+    l_mpi = False
+    rank = 0
+    size = 1
+
 
 __all__ = ['write_field', 'write_field_raw', 'create_file', 'SimulationParameters']
 
@@ -68,7 +82,7 @@ Other Attributes:
 
 
 def create_file(f, simulation_parameters, grid_dimensions,
-                data_author=None, data_comment=None):
+                data_author=None, data_comment=None, driver=None, comm=None):
     """
     Do all the structral creation of a gdf file.
 
@@ -100,8 +114,12 @@ def create_file(f, simulation_parameters, grid_dimensions,
     -----
     GDF is defined here: https://bitbucket.org/yt_analysis/grid_data_format/
     """
-    if isinstance(f, basestring):
-        f = h5py.File(f, 'a')
+    if l_mpi:
+        if isinstance(f, basestring):
+            f = h5py.File(f, 'a', driver='mpio', comm=comm)
+    else:
+        if isinstance(f, basestring):
+            f = h5py.File(f, 'a')
 
     # "gridded_data_format" group
     g = f.create_group("gridded_data_format")
@@ -266,10 +284,9 @@ def write_field_raw(gdf_file, field, field_shape=None, arr_slice=np.s_[:],
 
 def _write_dset_high(dset, data, arr_slice,collective=False):
     if collective:
-        with dset.collective:
-            dset[arr_slice] = np.ascontiguousarray(data)
+        dset[arr_slice,...] = data
     else:
-        dset[arr_slice] = np.ascontiguousarray(data)
+        dset[arr_slice,...] = np.ascontiguousarray(data)
 
 def _write_dset_low(dset, data, arr_slice, collective=False):
     memory_space = h5s.create_simple(data.shape)
