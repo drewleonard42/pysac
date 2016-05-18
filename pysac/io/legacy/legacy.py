@@ -307,7 +307,7 @@ class VACfile():
     def write_step(self):
         #Make sure you are saving the correct size data
         assert tuple(self.header['nx']) == self.w[0].shape
-        assert tuple(self.header['nx']) == self.x[0].shape
+        assert tuple(self.header['nx']) == self.x[..., 0].shape
 
         self._write_header()
         self._write_data()
