@@ -179,7 +179,8 @@ def convert_w_2D(w, w_):
 
     return sac_gdf_output
 
-def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
+#def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
+def write_gdf(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
               data_author=None, data_comment=None,
               collective=False, api='high'):
     """
@@ -227,20 +228,23 @@ def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
     else:
         f = h5py.File(gdf_path, "w")
 
-    domain_left_edge = [x[0][0,0,0].to(u.m).value,
+    """domain_left_edge = [x[0][0,0,0].to(u.m).value,
                         x[1][0,0,0].to(u.m).value,
                         x[2][0,0,0].to(u.m).value]
     domain_right_edge = [x[0][-1,-1,-1].to(u.m).value,
                          x[1][-1,-1,-1].to(u.m).value,
-                         x[2][-1,-1,-1].to(u.m).value]
-
+                         x[2][-1,-1,-1].to(u.m).value]"""
 
     simulation_params = SimulationParameters()
     simulation_params['dimensionality'] = 3
     simulation_params['domain_dimensions'] = header['nx']
     simulation_params['current_time'] = header['t']
-    simulation_params['domain_left_edge'] = domain_left_edge
-    simulation_params['domain_right_edge'] = domain_right_edge
+#    simulation_params['domain_left_edge'] = [-1.0e6, -1.0e6, 0.0]
+#    simulation_params['domain_right_edge'] = [1.0e6, 1.0e6, 1.6e6]
+#    simulation_params['domain_left_edge'] = domain_left_edge
+#    simulation_params['domain_right_edge'] = domain_right_edge
+    simulation_params['domain_left_edge'] = left
+    simulation_params['domain_right_edge'] = right
     simulation_params['num_ghost_zones'] = [0]
     simulation_params['field_ordering'] = 0
     simulation_params['boundary_conditions'] = np.zeros([6], dtype=int)+2
@@ -255,11 +259,14 @@ def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
 #    simulation_params['current_iteration']
 
 
-    create_file(f, simulation_params, x[0].shape, data_author=data_author,
+#    shape = fields['density_bg']['field'].shape
+    shape = header['nx']
+#    create_file(f, simulation_params, x[0].shape, data_author=data_author,
+    create_file(f, simulation_params, shape, data_author=data_author,
                 data_comment=data_comment)
 
     #Write the x array
-    f['x'] = x
+#    f['x'] = x
 
     for field_title,afield in fields.items():
        write_field(f, afield['field'], field_title, afield['field_name'],
@@ -268,3 +275,4 @@ def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
                    collective=collective, api=api)
 
     f.close()
+
