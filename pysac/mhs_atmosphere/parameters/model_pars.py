@@ -38,7 +38,7 @@ mfe_setup = {'photo_scale': 0.60*u.Mm,
 mfe_setup['chratio'] = 1*u.one - mfe_setup['coratio'] - mfe_setup['phratio']
 #if 1D or 2D set unused dimensions to 0, and unrequired xyz limits to 1.
 mfe_setup['Nxyz'] = [128,128,128] # 3D grid
-mfe_setup['Nxyz'] = [129,129,128] # 3D grid
+#mfe_setup['Nxyz'] = [129,129,128] # 3D grid
 mfe_setup['xyz']  = [-1*u.Mm,1*u.Mm,-1*u.Mm,1*u.Mm,3.6641221e-2*u.Mm,1.5877863*u.Mm] #grid size
 
 spruit = {'photo_scale': 1.5*u.Mm,
@@ -135,6 +135,15 @@ paper2d = {'photo_scale': 0.6*u.Mm,
 paper2d['chratio'] = 1*u.one - paper2d['coratio'] - paper2d['phratio']
 paper2d['Nxyz'] = [224,224,140] # 3D grid
 paper2d['xyz']  = [-2.23*u.Mm,2.23*u.Mm,-0.79*u.Mm,0.79*u.Mm,0*u.Mm,2.78*u.Mm] #grid size
+
+#if 1D or 2D set unused dimensions to 0, and unrequired xyz limits to 1.
+drew_model = mfe_setup.copy()
+#drew_model['Nxyz'] = [128, 128, 128]
+drew_model['Nxyz'] = [256, 256, 256]
+"""drew_model['xyz'] = [-1.0*u.Mm, 1.0*u.Mm,
+                     -1.0*u.Mm, 1.0*u.Mm,
+                      0.0*u.Mm, 1.6*u.Mm] #grid size"""
+drew_model['model'] = 'drew_model'
 
 
 def get_coords(Nxyz, xyz):
