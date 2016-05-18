@@ -87,6 +87,11 @@ def set_options(model, l_mpi, l_gdf=True):
         option_pars['l_single']          = True 
         option_pars['l_2D_loop']         = True 
         option_pars['l_atmos_val3c_mtw'] = True 
+    if model['model'] == 'drew_model':
+        option_pars['l_single']          = True 
+        option_pars['l_mfe']             = True 
+        option_pars['l_B0_expz']         = True 
+        option_pars['l_atmos_val3c_mtw'] = True 
     if l_mpi:
         option_pars['l_mpi'] = True
     else:
