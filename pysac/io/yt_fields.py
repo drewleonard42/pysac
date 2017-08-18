@@ -49,8 +49,9 @@ if yt.__version__.startswith('2'):
 
     @yt.derived_field(take_log=False, units=r'cm s^{-1}')
     def velocity_magnitude(field, data):
-        return np.sqrt(data['velocity_x']**2 + data['velocity_y']**2 +
-                    data['velocity_z']**2)
+        return np.sqrt(data['velocity_x'].to('cm/s')**2 + 
+                       data['velocity_y'].to('cm/s')**2 +
+                       data['velocity_z'].to('cm/s')**2)
 
     @yt.derived_field(take_log=False, units=r'Ba')
     def internal_energy(field, data):
