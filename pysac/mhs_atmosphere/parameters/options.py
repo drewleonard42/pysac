@@ -55,6 +55,11 @@ def set_options(model, l_mpi, l_gdf=True):
         option_pars['l_mfe']             = True
         option_pars['l_B0_expz']         = True
         option_pars['l_atmos_val3c_mtw'] = True
+    if model['model'] == 'mfe_noB':
+        option_pars['l_single']          = True
+        option_pars['l_mfe']             = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_atmos_val3c_mtw'] = True
     if model['model'] == 'spruit':    
         option_pars['l_single']          = True
         option_pars['l_spruit']          = True
@@ -95,9 +100,20 @@ def set_options(model, l_mpi, l_gdf=True):
         option_pars['l_atmos_val3c_mtw'] = True 
     if model['model'] == 'drew_model':
         option_pars['l_single']          = True 
-        option_pars['l_mfe']             = True 
+        option_pars['l_drewmod']             = True 
         option_pars['l_B0_expz']         = True 
         option_pars['l_atmos_val3c_mtw'] = True 
+    if model['model'] == 'drew_paper1':
+        option_pars['l_ambB']            = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_single']          = True
+        option_pars['l_atmos_val3c_mtw'] = True
+    if model['model'] == 'drewtube':
+        option_pars['l_single']          = True
+        option_pars['l_drewtube']         = True
+        option_pars['l_B0_expz']         = True
+        option_pars['l_atmos_val3c_mtw'] = True
+        #option_pars['l_ambB'] = True
     if l_mpi:
         option_pars['l_mpi'] = True
     else:
