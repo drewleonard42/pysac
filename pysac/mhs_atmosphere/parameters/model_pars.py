@@ -64,6 +64,12 @@ mfe_setup['Nxyz'] = [128,128,128] # 3D grid
 #mfe_setup['Nxyz'] = [129,129,128] # 3D grid
 mfe_setup['xyz']  = [-1*u.Mm,1*u.Mm,-1*u.Mm,1*u.Mm,3.6641221e-2*u.Mm,1.5877863*u.Mm] #grid size
 
+mfe_noB = mfe_setup.copy()
+mfe_noB['B_corona'] = 0.0 * u.T
+mfe_noB['pBplus'] = 0.0 * u.T
+mfe_noB['nftubes'] = 0
+mfe_noB['model'] = 'mfe_noB'
+
 spruit = {'photo_scale': 1.5*u.Mm,
           'chrom_scale': 0.5*u.Mm,
           'corona_scale': 100*u.Mm,      #scale height for the corona
@@ -83,12 +89,19 @@ spruit['xyz']  = [-1.27*u.Mm,1.27*u.Mm,-1.27*u.Mm,1.27*u.Mm,0.0*u.Mm,25.5*u.Mm] 
 
 paper1 = {'photo_scale': 0.6*u.Mm,
           'chrom_scale': 0.1*u.Mm,
+          #'photo_scale': 0.3*u.Mm,
+          #'chrom_scale': 0.13*u.Mm,
+          #'chrom_scale': 0.15*u.Mm,
           'corona_scale': 2.5e3*u.Mm,         #scale height for the corona
+          #'corona_scale': 1e3 * u.Mm,
+          #'coratio': 0.03*u.one,
           'coratio': 0.03*u.one,
           'model': 'paper1',
           'phratio': 0.0*u.one,
           'pixel': 0.36562475*u.Mm,              #(HMI pixel)
           'radial_scale': 0.10979002*u.Mm,
+          #'radial_scale': 0.02 * u.Mm,
+          #'radial_scale': 0.02 * u.Mm,
           'nftubes': 1,
           'B_corona': 9.2e-4*u.T,
           'pBplus': 1e-3*u.T}
@@ -115,18 +128,20 @@ paper2a['Nxyz'] = [160,80,432] # 3D grid
 paper2a['xyz']  = [-1.59*u.Mm,1.59*u.Mm,-0.79*u.Mm,0.79*u.Mm,0.*u.Mm,8.62*u.Mm] #grid size
 
 paper2b = {'photo_scale': 0.6*u.Mm,
-           'chrom_scale': 0.1*u.Mm,
+           #'chrom_scale': 0.1*u.Mm,
+           'chrom_scale': 0.25*u.Mm,
            'corona_scale': 2.5e3*u.Mm,         #scale height for the corona
            'coratio': 0.03*u.one,
            'model': 'paper2b',
            'phratio': 0.0*u.one,
            'pixel': 0.36562475*u.Mm,              #(HMI pixel)
-           'radial_scale': 0.10979002*u.Mm,
+           #'radial_scale': 0.10979002*u.Mm,
+           'radial_scale': 0.04*u.Mm,
            'nftubes': 4,
            'B_corona': 8.2e-4*u.T,
            'pBplus': 1.0e-3*u.T}
 paper2b['chratio'] = 1*u.one - paper2b['coratio'] - paper2b['phratio']
-paper2b['Nxyz'] = [50,50,140] # 3D grid
+paper2b['Nxyz'] = [200,200,140] # 3D grid
 paper2b['xyz']  = [-0.49*u.Mm,0.49*u.Mm,-0.49*u.Mm,0.49*u.Mm,0*u.Mm,2.78*u.Mm] #grid size
 
 paper2c = {'photo_scale': 0.6*u.Mm,
@@ -161,13 +176,61 @@ paper2d['xyz']  = [-2.23*u.Mm,2.23*u.Mm,-0.79*u.Mm,0.79*u.Mm,0*u.Mm,2.78*u.Mm] #
 
 #if 1D or 2D set unused dimensions to 0, and unrequired xyz limits to 1.
 drew_model = mfe_setup.copy()
-#drew_model['Nxyz'] = [128, 128, 128]
-drew_model['Nxyz'] = [256, 256, 256]
-"""drew_model['xyz'] = [-1.0*u.Mm, 1.0*u.Mm,
-                     -1.0*u.Mm, 1.0*u.Mm,
-                      0.0*u.Mm, 1.6*u.Mm] #grid size"""
+drew_model['Nxyz'] = [128, 128, 128]
+#drew_model['Nxyz'] = [256, 256, 128]#256]
+drew_model['photo_scale'] = 0.6 * u.Mm
+#drew_model['chrom_scale'] = 0.6 * u.Mm
+drew_model['chrom_scale'] = 0.6 * u.Mm
+#drew_model['radial_scale'] = 0.3603 * u.Mm # ~600km FWHM
+#drew_model['radial_scale'] = 0.1802 * u.Mm # ~300km FWHM
+drew_model['radial_scale'] = 0.1201 * u.Mm # ~200km FWHM
 drew_model['model'] = 'drew_model'
 
+drew_paper1 = paper1.copy()
+#drew_paper1['Nxyz'] = [256, 256, 128]
+#drew_paper1['xyz'] = mfe_setup['xyz']
+drew_paper1['chrom_scale'] = 0.2 * u.Mm
+drew_paper1['radial_scale'] = 0.1201 * u.Mm
+#drew_paper1['B_corona'] = 9.2e-4*u.T,
+drew_paper1['model'] = 'drew_paper1'
+
+"""
+drewtube = {'photo_scale': 0.1*u.Mm,
+            'chrom_scale': 0.158*u.Mm,
+            'corona_scale': 2.5e3*u.Mm,         #scale height for the corona
+            'coratio': 0.1*u.one,
+            'model': 'drewtube',
+            'phratio': 0.0*u.one,
+            'pixel': 0.36562475*u.Mm,  #(HMI pixel)
+            'radial_scale': 0.8*u.Mm,
+            'nftubes': 1,
+            'B_corona': 0.0*u.T,
+            'pBplus': 0*u.T}
+drewtube['chratio'] = 1*u.one - drewtube['coratio'] - drewtube['phratio']
+#if 1D or 2D set unused dimensions to 0, and unrequired xyz limits to 1.
+drewtube['Nxyz'] = [128,128,256] # 3D grid
+drewtube['xyz']  = [-4.0*u.Mm, 4.0*u.Mm,
+                    -4.0*u.Mm, 4.0*u.Mm,
+                    0.0*u.Mm, 5.0*u.Mm] #grid size"""
+
+drewtube = {'photo_scale': 0.10*u.Mm,
+            'chrom_scale': 0.15*u.Mm,
+            'corona_scale': 0.25*u.Mm,  #scale height for the corona
+            'coratio': 0.0*u.one,
+            'model': 'drewtube',
+            'phratio': 0.0*u.one,
+            'pixel': 0.36562475*u.Mm,  #(HMI pixel)
+            'radial_scale': 0.6*u.Mm,
+            'nftubes': 1,
+            #'B_corona': 4.85e-4*u.T,
+            'B_corona': 5.5e-4*u.T,
+            'pBplus': 12.0e-4*u.T}
+drewtube['chratio'] = 1*u.one - drewtube['coratio'] - drewtube['phratio']
+#if 1D or 2D set unused dimensions to 0, and unrequired xyz limits to 1.
+drewtube['Nxyz'] = [128,128,128] # 3D grid
+drewtube['xyz']  = [-4*u.Mm,4*u.Mm,
+                    -4*u.Mm,4*u.Mm,
+                     0*u.Mm,8*u.Mm] #grid size
 
 def get_coords(Nxyz, xyz):
     """
