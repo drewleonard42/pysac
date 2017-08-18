@@ -1,8 +1,11 @@
 import numpy as np
 
-from yt.utilities.physical_constants import mu_0
+from yt.utilities.physical_constants import mu_0, mp
 
 from yt.frontends.gdf.fields import GDFFieldInfo
+import yt.units as u
+
+import warnings
 
 class SACGDFFieldInfo(GDFFieldInfo):
     known_other_fields = (
@@ -54,7 +57,29 @@ class SACGDFFieldInfo(GDFFieldInfo):
             if data.ds.dimensionality == 3:
                 return np.sqrt(data['mag_field_x']**2 + data['mag_field_y']**2 +
                         data['mag_field_z']**2)
-        self.add_field(('gas','magnetic_field_strength'), function=magnetic_field_strength, units='T',
+        self.add_field(('gas','magnetic_field_strength'), function=magnetic_field_strength,
+                       units='T', force_override=True)
+
+        def magnetic_field_strength_pert(field, data):
+            if data.ds.dimensionality == 2:
+                return np.sqrt(data['mag_field_x_pert']**2 +
+                        data['mag_field_y_pert']**2)
+            if data.ds.dimensionality == 3:
+                return np.sqrt(data['mag_field_x_pert']**2 + data['mag_field_y_pert']**2 +
+                        data['mag_field_z_pert']**2)
+        self.add_field(('gas','magnetic_field_strength_pert'),
+                       function=magnetic_field_strength_pert, units='T',
+                       force_override=True)
+
+        def magnetic_field_strength_bg(field, data):
+            if data.ds.dimensionality == 2:
+                return np.sqrt(data['mag_field_x_bg']**2 +
+                        data['mag_field_y_bg']**2)
+            if data.ds.dimensionality == 3:
+                return np.sqrt(data['mag_field_x_bg']**2 + data['mag_field_y_bg']**2 +
+                        data['mag_field_z_bg']**2)
+        self.add_field(('gas','magnetic_field_strength_bg'),
+                       function=magnetic_field_strength_bg, units='T',
                        force_override=True)
 
         def thermal_pressure(field, data):
@@ -91,3 +116,15 @@ class SACGDFFieldInfo(GDFFieldInfo):
             return data['thermal_pressure'] / data['mag_pressure']
         self.add_field(('gas','plasma_beta'), function=plasma_beta,
                        units=r'dimensionless', force_override=True)
+
+        def temperature(field, data):
+            warnings.warn("Hard coded numbers", Warning)
+            return (data['thermal_pressure'] * 1.2 * mp) / (8.3e-3 * (u.amu * (u.km / u.s)**2 / u.K)  * data['density'])
+        self.add_field(('gas','temperature'), function=temperature,
+                       units=r'K', force_override=True)
+
+        def temperature_pert(field, data):
+            warnings.warn("Hard coded numbers", Warning)
+            return (data['thermal_pressure_pert'] * 1.2 * mp) / (8.3e-3 * (u.amu * (u.km / u.s)**2 / u.K)  * data['density'])
+        self.add_field(('gas','temperature_pert'), function=temperature_pert,
+                       units=r'K', force_override=True)
