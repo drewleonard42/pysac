@@ -63,7 +63,7 @@ class SeedStreamline44(Streamline):
         # Create and setup the default objects.
         self.seed = tvtk.PolyData(points=self.seed_points)
         self.stream_tracer = tvtk.StreamTracer(maximum_propagation=2000,
-                                               integration_direction='backward',
+                                               integration_direction='both', #'backward',
                                                compute_vorticity=False,
                                                integrator_type='runge_kutta4',
                                                )
