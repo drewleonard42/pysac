@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Thu Dec 11 13:55:17 2014
@@ -29,7 +30,8 @@ import os
 import numpy as np
 import pysac.mhs_atmosphere as atm
 import astropy.units as u
-from pysac.mhs_atmosphere.parameters.model_pars import mfe_setup as model_pars
+#from pysac.mhs_atmosphere.parameters.model_pars import drew_model as model_pars
+from pysac.mhs_atmosphere.parameters.model_pars import paper2b as model_pars
 #==============================================================================
 #check whether mpi is required and the number of procs = size
 #==============================================================================
@@ -40,7 +42,8 @@ try:
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    collective=True
+    #collective=True
+    collective=False
     l_mpi = True
     l_mpi = l_mpi and (size != 1)
 except ImportError:
@@ -48,6 +51,8 @@ except ImportError:
     l_mpi = False
     rank = 0
     size = 1
+
+print('\n====\n', rank, size, collective, l_mpi, '\n====\n')
 #==============================================================================
 #set up model parameters
 #==============================================================================
@@ -67,7 +72,7 @@ table = \
         atm.hs_atmosphere.interpolate_atmosphere(empirical_data,
                                    coords['Zext']
                                   )
-if model_pars['model'] == 'mfe_setup':
+if model_pars['model'] == 'mfe_setup' or model_pars['model'] == 'drew_model':
     table['rho'] = table['rho'] + table['rho'].min()*3.6
 
 #==============================================================================
@@ -91,7 +96,8 @@ pressure_Z, rho_Z, Rgas_Z = atm.hs_atmosphere.vertical_profile(
 # load flux tube footpoint parameters
 #==============================================================================
 # axial location and value of Bz at each footpoint
-model_pars['B_corona']/=model_pars['nftubes']
+if model_pars['nftubes'] != 0:
+    model_pars['B_corona']/=model_pars['nftubes']
 xi, yi, Si = atm.flux_tubes.get_flux_tubes(
                                 model_pars,
                                 coords,
@@ -177,7 +183,10 @@ for i in range(0,model_pars['nftubes']):
             Btensy += B2y
 
 # clear some memory
-del pressure_mi, rho_mi, Bxi, Byi ,Bzi, B2x, B2y
+try:
+    del pressure_mi, rho_mi, Bxi, Byi ,Bzi, B2x, B2y
+except NameError:
+    pass
 #==============================================================================
 # Construct 3D hs arrays and then add the mhs adjustments to obtain atmosphere
 #==============================================================================
@@ -212,12 +221,14 @@ else:
     pbeta  = magp+1.0    #dummy to avoid NaN
 alfven = np.sqrt(2.*magp/rho)
 cspeed = np.sqrt(physical_constants['gamma']*pressure/rho)
+
 #============================================================================
 # Save data for SAC and plotting
 #============================================================================
 # set up data directory and file names
 # may be worthwhile locating on /data if files are large
-datadir = os.path.expanduser('~/Documents/mhs_atmosphere/'+model_pars['model']+'/')
+#datadir = os.path.expanduser('~/Documents/mhs_atmosphere/'+model_pars['model']+'/')
+datadir = os.path.join('/data', 'sm1ajl', 'custom_ini_files', model_pars['model']) + '/'
 filename = datadir + model_pars['model'] + option_pars['suffix']
 if not os.path.exists(datadir):
     os.makedirs(datadir)
@@ -287,6 +298,6 @@ if rank==0:
          )
 if rho.min()<0 or pressure.min()<0:
     print"FAIL rank {}: negative rho.min() {} and/or pressure.min() {}.".format(
-                            rank,rho.min(),pressure.min())
+        rank,rho.min(),pressure.min())
 FWHM = 2*np.sqrt(np.log(2))*model_pars['radial_scale']
 print'FWHM(0) =',FWHM
