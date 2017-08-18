@@ -179,8 +179,8 @@ def convert_w_2D(w, w_):
 
     return sac_gdf_output
 
-#def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
-def write_gdf(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
+# Original write_gdf function for low-res data
+def write_gdf(gdf_path, header, x, fields, arr_slice=np.s_[:],
               data_author=None, data_comment=None,
               collective=False, api='high'):
     """
@@ -228,21 +228,105 @@ def write_gdf(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
     else:
         f = h5py.File(gdf_path, "w")
 
-    """domain_left_edge = [x[0][0,0,0].to(u.m).value,
+    # For low-res
+    domain_left_edge = [x[0][0,0,0].to(u.m).value,
                         x[1][0,0,0].to(u.m).value,
                         x[2][0,0,0].to(u.m).value]
     domain_right_edge = [x[0][-1,-1,-1].to(u.m).value,
                          x[1][-1,-1,-1].to(u.m).value,
-                         x[2][-1,-1,-1].to(u.m).value]"""
+                         x[2][-1,-1,-1].to(u.m).value]
 
     simulation_params = SimulationParameters()
     simulation_params['dimensionality'] = 3
     simulation_params['domain_dimensions'] = header['nx']
     simulation_params['current_time'] = header['t']
-#    simulation_params['domain_left_edge'] = [-1.0e6, -1.0e6, 0.0]
-#    simulation_params['domain_right_edge'] = [1.0e6, 1.0e6, 1.6e6]
-#    simulation_params['domain_left_edge'] = domain_left_edge
-#    simulation_params['domain_right_edge'] = domain_right_edge
+    simulation_params['domain_left_edge'] = domain_left_edge # For low-res
+    simulation_params['domain_right_edge'] = domain_right_edge # For low-res
+    simulation_params['num_ghost_zones'] = [0]
+    simulation_params['field_ordering'] = 0
+    simulation_params['boundary_conditions'] = np.zeros([6], dtype=int)+2
+
+    simulation_params['eqpar'] = header['eqpar']
+#    simulation_params['gravity0']
+#    simulation_params['gravity1']
+#    simulation_params['gravity2']
+#    simulation_params['nu']
+#    simulation_params['eta']
+#    simulation_params['gamma']
+#    simulation_params['current_iteration']
+
+
+#    shape = fields['density_bg']['field'].shape
+#    shape = header['nx']
+    create_file(f, simulation_params, x[0].shape, data_author=data_author,
+#    create_file(f, simulation_params, shape, data_author=data_author,
+                data_comment=data_comment)
+
+    #Write the x array
+    f['x'] = x
+
+    for field_title,afield in fields.items():
+       write_field(f, afield['field'], field_title, afield['field_name'],
+                   field_shape=header['nx'], arr_slice=arr_slice,
+                   staggering=afield['staggering'],
+                   collective=collective, api=api)
+
+    f.close()
+
+
+# Higher-res write function
+def write_gdf_highres(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
+                      data_author=None, data_comment=None,
+                      collective=False, api='high'):
+    """
+    Write a gdf file from a vac-data header a w array and an x array.
+
+    gdf files should be written in a x,y,z order, please swap them before
+    calling this function!!
+
+    Parameters
+    ----------
+    gdf_path : `str` or `h5py.File`
+        Filename to save out.
+
+    header : `dict`
+        A 'VACdata' like header.
+
+    x : `astropy.units.Quantity`
+        The x array described in header, in x,y,z order.
+
+    fields : `dict`
+        A dictionary with a key for each varname in header, and a value containing a dictionary with each of
+        `field` : astropy.units.Quantity, The array for this field, in x,y,z (should be in SI not code units)
+        `field_name` : string, A descriptive name for the field, spaces allowed
+        `staggering` : integer {0: cell-centred, 1: face-centred, 2: vertex-centred}.
+
+    data_author : (optional) string
+        Author to write to file.
+
+    data_comment : (optional) string
+        A comment to write to file.
+
+    collective : bool
+        Use mpi collective driver
+
+    api : string
+        h5py API to use. ('high' | 'low')
+
+    Notes
+    -----
+    GDF is defined here: https://bitbucket.org/yt_analysis/grid_data_format/
+    """
+    # Create and open the file with h5py
+    if isinstance(gdf_path, h5py.File):
+        f = gdf_path
+    else:
+        f = h5py.File(gdf_path, "w")
+
+    simulation_params = SimulationParameters()
+    simulation_params['dimensionality'] = 3
+    simulation_params['domain_dimensions'] = header['nx']
+    simulation_params['current_time'] = header['t']
     simulation_params['domain_left_edge'] = left
     simulation_params['domain_right_edge'] = right
     simulation_params['num_ghost_zones'] = [0]
@@ -266,7 +350,7 @@ def write_gdf(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
                 data_comment=data_comment)
 
     #Write the x array
-#    f['x'] = x
+    #f['x'] = x
 
     for field_title,afield in fields.items():
        write_field(f, afield['field'], field_title, afield['field_name'],
@@ -275,4 +359,3 @@ def write_gdf(gdf_path, header, left, right, fields, arr_slice=np.s_[:],
                    collective=collective, api=api)
 
     f.close()
-
