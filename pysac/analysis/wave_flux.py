@@ -60,18 +60,36 @@ def get_wave_flux_yt(ds):  # , B_to_SI=1, V_to_SI=1, Pk_to_SI=1):
         The wave energy flux
     """
     cg = ds.index.grids[0]
+    del ds
     
-    Bb = np.array([cg['mag_field_x_bg'], cg['mag_field_y_bg'], cg['mag_field_z_bg']])
+    """Bb = np.array([cg['mag_field_x_bg'], cg['mag_field_y_bg'], cg['mag_field_z_bg']])
     Bp = np.array([cg['mag_field_x_pert'], cg['mag_field_y_pert'], cg['mag_field_z_pert']])
-    V = np.array([cg['velocity_x'], cg['velocity_y'], cg['velocity_z']])
+    V = np.array([cg['velocity_x'], cg['velocity_y'], cg['velocity_z']])"""
+
+    mag_field_x_bg = cg['mag_field_x_bg']
+    mag_field_y_bg = cg['mag_field_y_bg']
+    mag_field_z_bg = cg['mag_field_z_bg']
+    mag_field_x_pert = cg['mag_field_x_pert']
+    mag_field_y_pert = cg['mag_field_y_pert']
+    mag_field_z_pert = cg['mag_field_z_pert']
+    velocity_x = cg['velocity_x']
+    velocity_y = cg['velocity_y']
+    velocity_z = cg['velocity_z']
+    Pk = cg['thermal_pressure']# * Pk_to_SI
+    del cg
+    Bb = np.array([mag_field_x_bg, mag_field_y_bg, mag_field_z_bg])
+    Bp = np.array([mag_field_x_pert, mag_field_y_pert, mag_field_z_pert])
+    V = np.array([velocity_x, velocity_y, velocity_z])
     
     #Bb *= B_to_SI
     #Bp *= B_to_SI
-    Pk = cg['thermal_pressure']# * Pk_to_SI
+    #Pk = cg['thermal_pressure']# * Pk_to_SI
     
     #Calculate wave flux
     Fp = 0.25*np.pi * (np.sum(Bb*Bp, axis=0)[None] * V) - (np.sum(V*Bp, axis=0)[None] * Bb)
+    del Bb, Bp
     Fa = Pk[None]*V
+    del V
     
     Fwave = Fa + yt.YTArray(Fp, 'Pa')  # Cast to Pa
     return Fwave
