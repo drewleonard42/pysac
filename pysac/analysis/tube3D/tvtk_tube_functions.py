@@ -19,11 +19,11 @@ __all__ = ['move_seeds', 'make_circle_seeds', 'create_flux_surface',
            'get_surface_indexes', 'PolyDataWriter', 'write_step', 'write_flux',
            'write_wave_flux', 'read_step', 'get_data']
 
-def move_seeds(seeds, vfield, dt):
+def move_seeds(seeds, vfield, dt, dx):
     """
     Move a list of seeds based on a velocity field.
 
-    .. warning:: WARNING: THIS IS HARD CODED FOR GRID SIZE!
+    .. warning:: WARNING: THIS IS HARD CODED FOR GRID SIZE! no it isn't
 
     Parameters
     ----------
@@ -46,14 +46,15 @@ def move_seeds(seeds, vfield, dt):
     tvtk_common.configure_input_data(v_seed, seeds)
     tvtk_common.configure_source_data(v_seed, vfield)
     v_seed.update()
-    int_vels = np.array(v_seed.output.point_data.vectors)[:,:2]/(15.625*1e3)
+    int_vels = np.array(v_seed.output.point_data.vectors)/dx#[:,:2]/(7.8125*1e3)#(15.625*1e3)
     seed_arr = np.array(seeds.points)
-    seed_arr[:,:2] += int_vels * dt
+    #seed_arr[:,:2] += int_vels * dt
+    seed_arr += int_vels * dt
 
-    #seeds.points = seed_arr
+    seeds.points = seed_arr
     return seed_arr
 
-def make_circle_seeds(n, r, **domain):
+def make_circle_seeds(n, r, z=None, angles=None, **domain):
     """
     Generate an array of n seeds evenly spaced in a circle at radius r.
 
@@ -64,6 +65,9 @@ def make_circle_seeds(n, r, **domain):
 
     r:  float
         Radius of the Circle in grid points
+
+    z:  float
+        Height in the domain
 
     **domain: Dict
         kwargs specifiying the properties of the domain.
@@ -76,12 +80,16 @@ def make_circle_seeds(n, r, **domain):
     """
     xc = domain['xmax']/2
     yc = domain['ymax']/2
+    if not z:
+        z = domain['zmax']
+    if angles is None:
+        angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
     ti = 0
 
     surf_seeds = []
-    for theta in np.linspace(0, 2 * np.pi, n, endpoint=False):
+    for theta in angles:
         surf_seeds.append([r * np.cos(theta + 0.5 * ti) + xc,
-                      r * np.sin(theta + 0.5 * ti) + yc, domain['zmax']])
+                      r * np.sin(theta + 0.5 * ti) + yc, z])
 
     surf_seeds_arr = np.array(surf_seeds)
     surf_seeds = tvtk.PolyData()
