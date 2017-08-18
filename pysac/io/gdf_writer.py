@@ -210,7 +210,6 @@ def write_field(gdf_file, data, field_title, field_name, field_shape=None,
 
     fv = gdf_file['field_types'].create_group(field_title)
     fv.attrs['field_name'] = field_name
-    fv.attrs['field_to_cgs'] = field.unit.to_system(u.cgs)[0].scale
     fv.attrs['field_units'] = np.string_(field.unit.to_string("latex").strip('$'))
     fv.attrs['staggering'] = staggering
 
@@ -284,9 +283,15 @@ def write_field_raw(gdf_file, field, field_shape=None, arr_slice=np.s_[:],
 
 def _write_dset_high(dset, data, arr_slice,collective=False):
     if collective:
-        dset[arr_slice,...] = data
+        #dset[arr_slice,...] = data
+        with dset.collective:
+            dset[arr_slice] = np.ascontiguousarray(data)
     else:
-        dset[arr_slice,...] = np.ascontiguousarray(data)
+# ============
+# THESE THINGS NEED TO SWITCH DEPENDING ON WHAT GDF FILE YOU'RE WRITING. DON'T KNOW WHY
+# ============
+#        dset[arr_slice,...] = np.ascontiguousarray(data) # For writing ini files
+        dset[arr_slice] = np.ascontiguousarray(data) # for collecting SAC output
 
 def _write_dset_low(dset, data, arr_slice, collective=False):
     memory_space = h5s.create_simple(data.shape)
