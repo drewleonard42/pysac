@@ -27,15 +27,17 @@ def get_flux_tubes(
     """ Obtain an array of x,y coordinates and corresponding vertical
     component value for the photospheric magnetic field  """
 
-    #xi, yi, Si = [[0.]]*u.Mm,  [[0.]]*u.Mm,  [[0.1]]*u.T  # x,y,Bz(r=0,z=0)
-    xi, yi, Si = (
+    if model_pars['nftubes'] == 0:
+        xi, yi, Si = [[0.]]*u.Mm,  [[0.]]*u.Mm,  [[0.0]]*u.T  # x,y,Bz(r=0,z=0)
+    else:
+        xi, yi, Si = (
             u.Quantity([
-                       [0.]] * model_pars['nftubes'], unit=u.Mm),
+        	       [0.]] * model_pars['nftubes'], unit=u.Mm),
             u.Quantity([
-                       [0.]] * model_pars['nftubes'], unit=u.Mm),
+        	       [0.]] * model_pars['nftubes'], unit=u.Mm),
             u.Quantity([
-                       [0.1/model_pars['nftubes']]] * model_pars['nftubes'], 
-                       unit=u.T),                       
+        	       [0.1/model_pars['nftubes']]] * model_pars['nftubes'], 
+        	       unit=u.T),                       
             )
 
     # parameters for matching Mumford,Fedun,Erdelyi 2014
@@ -44,6 +46,13 @@ def get_flux_tubes(
     # parameters for matching Mumford,Fedun,Erdelyi 2014
     if option_pars['l_mfe']:
         Si = [[0.1436]]*u.T # 128.5mT SI units
+    elif option_pars['l_drewmod']:
+        Si = [[0.012]] * u.T
+        #Si = [[0.005]] * u.T
+        #Si = [[0.05]] * u.T
+    elif model_pars['model'] == 'drewtube':
+        Si = [[2.7]] * u.kG
+        #Si = [[0.001]] * u.T
     # parameters for matching Gent,Fedun,Mumford,Erdelyi 2014
     elif option_pars['l_single']:
         Si = [[0.1]]*u.T # 100mT SI units
@@ -71,7 +80,7 @@ def get_flux_tubes(
                      )# 50mT SI
     # parameters for matching Gent,Fedun,Erdelyi 2014 twisted flux tubes
     elif option_pars['l_multi_twist']:
-        xi, yi, Si = (
+        """xi, yi, Si = (
                       u.Quantity([
                                 [ 0.34],
                                 [ 0.07],
@@ -90,7 +99,10 @@ def get_flux_tubes(
                                 [  50e-3],
                                 [  50e-3]
                                ], unit=u.T)
-                     )# 50mT SI
+                     )# 50mT SI"""
+        xi, yi, Si = (u.Quantity([[0.34], [0.07], [0.14], [-0.31]], unit=u.Mm),
+                      u.Quantity([[0.2], [0.33], [0.04], [-0.34]], unit=u.Mm),
+                      u.Quantity([[50e-3], [50e-3], [50e-3], [50e-3]], unit=u.T))
     elif option_pars['l_multi_netwk']:
         xi, yi, Si = (
             u.Quantity([
