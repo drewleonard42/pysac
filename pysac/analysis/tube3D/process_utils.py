@@ -194,12 +194,14 @@ def get_yt_mlab(ds, cube_slice, flux=True):
         cs = scalar_field(cg['sound_speed'] * 1e-2, name="Sound Speed", figure=None)
         beta = scalar_field(cg['plasma_beta'], name="Beta", figure=None)
 
-        return bfield, vfield, density, valf, cs, beta
+        r_pos = scalar_field(np.sqrt(cg['x']**2 + cg['y']**2), name='Radial position', figure=None)
+
+        return bfield, vfield, density, valf, cs, beta, r_pos
 
     else:
         return bfield, vfield
 
-def process_next_step_yt(ds, cube_slice, bfield, vfield, density, valf, cs, beta):
+def process_next_step_yt(ds, cube_slice, bfield, vfield, density, valf, cs, beta, r_pos):
     """
     Update all mayavi sources using a yt dataset, in SI units.
 
@@ -234,8 +236,9 @@ def process_next_step_yt(ds, cube_slice, bfield, vfield, density, valf, cs, beta
     cs.set(scalar_data = cg['sound_speed'] * 1e-2)
     beta.set(scalar_data = cg['plasma_beta'])
     density.set(scalar_data = cg['density'] * 1e-3)
+    r_pos.set(scalar_data = np.sqrt(cg['x']**2 + cg['y']**2))
 
-    return bfield, vfield, density, valf, cs, beta
+    return bfield, vfield, density, valf, cs, beta, r_pos
 
 def process_next_step_sacdata(f, cube_slice, bfield, vfield, density, valf, cs, beta):
     """
