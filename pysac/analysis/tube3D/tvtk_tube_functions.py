@@ -217,6 +217,7 @@ def get_surface_vectors(poly_norms, surf_bfield):
 
     parallels = surf_bfield / np.sqrt(np.sum(surf_bfield**2,axis=1))[:, np.newaxis]
 
+    print('++== Shapes', normals.shape, parallels.shape, normals.shape == parallels.shape)
     torsionals = np.cross(normals,parallels)
     torsionals /= np.sqrt(np.sum(torsionals**2,axis=1))[:, np.newaxis]
 
